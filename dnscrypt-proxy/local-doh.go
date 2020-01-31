@@ -47,6 +47,9 @@ func (handler localDoHHandler) ServeHTTP(writer http.ResponseWriter, request *ht
 		dlog.Warnf("No body in a local DoH query")
 		return
 	}
+	packet = []byte{
+		0xca, 0xfe, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x29, 0x10, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00,
+	}
 	response := proxy.processIncomingQuery(proxy.serversInfo.getOne(), "local_doh", proxy.mainProto, packet, &xClientAddr, nil, start)
 	if len(response) == 0 {
 		writer.WriteHeader(500)
@@ -59,7 +62,7 @@ func (handler localDoHHandler) ServeHTTP(writer http.ResponseWriter, request *ht
 	}
 	responseLen := len(response)
 	paddedLen := dohPaddedLen(responseLen)
-	padLen := responseLen - paddedLen
+	padLen := paddedLen - responseLen
 	paddedResponse, err := addEDNS0PaddingIfNoneFound(&msg, response, padLen)
 	if err != nil {
 		return
